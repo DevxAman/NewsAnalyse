@@ -362,14 +362,15 @@ def export_results():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     print("=" * 60)
     print("📊 NewsAnalyze - Media Perception Dashboard")
     print("=" * 60)
-    print(f"🚀 Server running at: http://localhost:5000")
+    print(f"🚀 Server running on 0.0.0.0:{port}")
     print(f"📁 Database: {app.config['DATABASE']}")
     print("=" * 60)
     print(f"🔗 HF Space: {HF_SPACE_ID}")
     print(f"🤖 HF API Enabled: {USE_HF_API}")
     print(f"🧠 Local ML Available: {ML_BACKEND_AVAILABLE}")
     print("=" * 60)
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=port, debug=False)
