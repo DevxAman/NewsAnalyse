@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsAnalyze - Media Perception Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary: #7C3AED;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --radius: 16px;
+            --border: #E2E8F0;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.92);
+        }
+        
+        nav .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo span { color: var(--primary); }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+        nav a:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: var(--radius);
+            padding: 2.5rem 3rem;
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            right: -100px;
+            top: -100px;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        
+        .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; position: relative; z-index: 1; }
+        .hero p { opacity: 0.9; font-size: 1.05rem; position: relative; z-index: 1; }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .input-grid { grid-template-columns: 1fr; }
+            .hero { padding: 1.5rem; }
+            .hero h1 { font-size: 1.5rem; }
+            .container { padding: 1rem; }
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #FAFBFC;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: #F5F7FF;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .upload-area input[type="file"] { display: none; }
+        
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover { background: var(--bg); }
+        
+        .sql-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 80px;
+            transition: var(--transition);
+        }
+        .sql-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        /* ===== DASHBOARD ===== */
+        #dashboard {
+            display: none;
+        }
+        
+        #dashboard.visible {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        
+        .stat-card.total::before { background: var(--primary); }
+        .stat-card.positive::before { background: var(--success); }
+        .stat-card.negative::before { background: var(--danger); }
+        .stat-card.neutral::before { background: var(--warning); }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        
+        .stat-card .number {
+            font-size: 2.4rem;
+            font-weight: 700;
+        }
+        .stat-card.total .number { color: var(--primary); }
+        .stat-card.positive .number { color: var(--success); }
+        .stat-card.negative .number { color: var(--danger); }
+        .stat-card.neutral .number { color: var(--warning); }
+        
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        .stat-card .emoji { font-size: 1.2rem; margin-right: 0.25rem; }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .charts-grid-full {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        
+        @media (max-width: 992px) {
+            .charts-grid-full { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .charts-grid-full { grid-template-columns: 1fr; }
+        }
+        
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .chart-container canvas {
+            max-height: 260px;
+            max-width: 100%;
+        }
+        
+        .chart-container .chart-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        
+        /* ===== TABLE ===== */
+        .table-container { overflow-x: auto; margin-top: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th {
+            background: #F8FAFC;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 0.7rem 0.8rem;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        tr:hover td { background: #F8FAFC; }
+        
+        .badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-positive { background: #D1FAE5; color: #065F46; }
+        .badge-negative { background: #FEE2E2; color: #991B1B; }
+        .badge-neutral { background: #FEF3C7; color: #78350F; }
+        .badge-domain { background: #E0E7FF; color: #3730A3; }
+        
+        .model-tag {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        .model-hf { background: #EDE9FE; color: #5B21B6; }
+        .model-local { background: #DBEAFE; color: #1E40AF; }
+        .model-existing { background: #FEF3C7; color: #92400E; }
+        .model-fallback { background: #FEE2E2; color: #991B1B; }
+        
+        .flex { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .mt-2 { margin-top: 1.5rem; }
+        .mb-2 { margin-bottom: 1.5rem; }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-light); }
+        .text-sm { font-size: 0.85rem; }
+        
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-error { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+        .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+        .alert-info { background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; }
+        
+        .hidden { display: none !important; }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #E2E8F0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-info {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            background: #F8FAFC;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
+        .status-dot.offline { background: var(--danger); }
+        .status-dot.checking { background: var(--warning); animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-light);
+        }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
+        .empty-state h3 { color: var(--text); margin-bottom: 0.5rem; }
+        
+        .score-high {
+            color: var(--success);
+            font-weight: 600;
+        }
+        .score-mid {
+            color: var(--warning);
+            font-weight: 600;
+        }
+        .score-low {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .mode-selector { grid-template-columns: 1fr; }
+        }
+        .mode-option {
+            display: block;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #FAFBFC;
+            position: relative;
+        }
+        .mode-option:hover { border-color: var(--primary); background: #F5F7FF; }
+        .mode-option.selected {
+            border-color: var(--primary);
+            background: #F5F7FF;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .mode-option input[type="radio"] {
+            position: absolute;
+            top: 0.9rem;
+            right: 1rem;
+            accent-color: var(--primary);
+        }
+        .mode-option-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; padding-right: 1.2rem; }
+        .mode-option-desc { font-size: 0.78rem; color: var(--text-light); line-height: 1.3; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">📊 <span>NewsAnalyze</span></div>
+            <ul>
+                <li><a href="#input">📥 Input</a></li>
+                <li><a href="#dashboard">📈 Dashboard</a></li>
+                <li><a href="#results">📋 Results</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>📰 Media Perception Dashboard</h1>
+            <p>Upload news data and get instant sentiment analysis with beautiful infographics</p>
+            <div style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; opacity: 0.9; position: relative; z-index: 1;">
+                <span id="hfStatus">
+                    <span class="status-dot checking" id="hfStatusDot"></span>
+                    <span id="hfStatusText">Checking HF API...</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages"></div>
+
+        <!-- Analysis Mode Selector -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <h3>⚙️ Analysis Mode</h3>
+            <p class="text-muted text-sm" style="margin-bottom:0.9rem;">Choose which engine scores your articles</p>
+            <div class="mode-selector" id="modeSelector">
+                <label class="mode-option selected" data-mode="auto">
+                    <input type="radio" name="analysisMode" value="auto" checked>
+                    <div class="mode-option-title">🔀 Auto</div>
+                    <div class="mode-option-desc">HF Space first, falls back to Local ML if it's unreachable</div>
+                </label>
+                <label class="mode-option" data-mode="hf">
+                    <input type="radio" name="analysisMode" value="hf">
+                    <div class="mode-option-title">🚀 HF Space Only</div>
+                    <div class="mode-option-desc">More accurate (RoBERTa/Siebert ensemble). Fails clearly if the Space is down, no silent fallback</div>
+                </label>
+                <label class="mode-option" data-mode="local">
+                    <input type="radio" name="analysisMode" value="local">
+                    <div class="mode-option-title">💻 Local ML Only</div>
+                    <div class="mode-option-desc">Runs on this server. Faster, always available, less accurate</div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div id="input" class="input-grid">
+            <div class="card">
+                <h3>📁 Upload Data</h3>
+                <p class="text-muted text-sm" style="margin-bottom:0.75rem;">Upload Excel/CSV with news articles</p>
+                
+                <div class="upload-area" id="dropZone">
+                    <div class="icon">📤</div>
+                    <p><strong>Drop file here</strong> or click to browse</p>
+                    <p class="text-muted text-sm">.xlsx, .xls, .csv</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)">
+                </div>
+                
+                <div id="fileInfo" class="hidden file-info">
+                    <span id="fileName">📄 file.xlsx</span>
+                    <button class="btn btn-primary" style="padding:0.3rem 1.2rem; font-size:0.8rem;" onclick="analyzeExcel()">
+                        🚀 Analyze
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🗄️ SQL Query</h3>
+                <p class="text-muted text-sm" style="margin-bottom:0.75rem;">Query your news database</p>
+                
+                <textarea class="sql-input" id="sqlQuery" placeholder="SELECT * FROM news_articles LIMIT 100">SELECT * FROM news_articles LIMIT 100</textarea>
+                
+                <div class="flex" style="margin-top:0.75rem;">
+                    <button class="btn btn-primary" onclick="analyzeSQL()">🚀 Run</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('sqlQuery').value='SELECT * FROM news_articles WHERE sentiment_label=\'Positive\' LIMIT 50'">✅ Positive</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('sqlQuery').value='SELECT * FROM news_articles ORDER BY created_at DESC LIMIT 20'">📅 Recent</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('sqlQuery').value='SELECT sentiment_label, COUNT(*) FROM news_articles GROUP BY sentiment_label'">📊 Stats</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <div id="dashboard">
+            <h2>📈 Analysis Dashboard</h2>
+            
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card total">
+                    <div class="number" id="statTotal">0</div>
+                    <div class="label">📄 Total Articles</div>
+                </div>
+                <div class="stat-card positive">
+                    <div class="number" id="statPositive">0</div>
+                    <div class="label">✅ Positive</div>
+                </div>
+                <div class="stat-card negative">
+                    <div class="number" id="statNegative">0</div>
+                    <div class="label">❌ Negative</div>
+                </div>
+                <div class="stat-card neutral">
+                    <div class="number" id="statNeutral">0</div>
+                    <div class="label">⚪ Neutral</div>
+                </div>
+            </div>
+
+            <div class="charts-grid charts-grid-full">
+                <div class="chart-container">
+                    <div class="chart-title">🎯 Sentiment Distribution</div>
+                    <canvas id="sentimentPieChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🏷️ Domain Distribution</div>
+                    <canvas id="domainBarChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🤖 Model Usage</div>
+                    <canvas id="modelChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RESULTS ===== -->
+        <div id="results" class="mt-2">
+            <div class="flex-between">
+                <h2>📋 Results</h2>
+                <div class="flex">
+                    <button class="btn btn-success" onclick="exportResults()">📥 Export</button>
+                    <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Headline</th>
+                            <th>Date</th>
+                            <th>Source</th>
+                            <th>Domain</th>
+                            <th>Sentiment</th>
+                            <th>Model</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr><td colspan="7" class="text-center text-muted" style="padding: 3rem;">📊 No data loaded. Upload a file or run a query to get started.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>NewsAnalyze</strong> — Media Perception Intelligence</p>
+        <p style="font-size:0.8rem;">Powered by HF Space + Local ML</p>
+    </footer>
+
+    <script>
+        let currentResults = [];
+        let currentSummary = {};
+        let chartInstances = {};
+        let analysisMode = 'auto'; // 'auto' | 'hf' | 'local'
+
+        // ============================================
+        // ANALYSIS MODE SELECTOR
+        // ============================================
+        document.getElementById('modeSelector').addEventListener('click', (e) => {
+            const option = e.target.closest('.mode-option');
+            if (!option) return;
+
+            document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
+            option.classList.add('selected');
+            option.querySelector('input[type="radio"]').checked = true;
+            analysisMode = option.dataset.mode;
+        });
+
+        // ============================================
+        // CHECK HF API STATUS
+        // ============================================
+        async function checkHFStatus() {
+            const dot = document.getElementById('hfStatusDot');
+            const text = document.getElementById('hfStatusText');
+            
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.hf_api && data.hf_api.available) {
+                    dot.className = 'status-dot online';
+                    text.textContent = `✅ HF API Online (${data.hf_api.response_time}s)`;
+                } else {
+                    dot.className = 'status-dot offline';
+                    text.textContent = '⚠️ HF API Offline - Using Local ML';
+                }
+            } catch (e) {
+                dot.className = 'status-dot offline';
+                text.textContent = '⚠️ HF API Unreachable';
+            }
+        }
+
+        // ============================================
+        // FILE HANDLING
+        // ============================================
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('fileName').textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            document.getElementById('fileInfo').classList.remove('hidden');
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--primary)';
+            dropZone.style.background = '#F5F7FF';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'var(--border)';
+            dropZone.style.background = '#FAFBFC';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border)';
+            dropZone.style.background = '#FAFBFC';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFileSelect({ target: { files: files } });
+            }
+        });
+        dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+
+        // ============================================
+        // CHARTS
+        // ============================================
+        function destroyCharts() {
+            Object.keys(chartInstances).forEach(key => {
+                if (chartInstances[key]) {
+                    chartInstances[key].destroy();
+                    delete chartInstances[key];
+                }
+            });
+        }
+
+        function createCharts(summary) {
+            destroyCharts();
+
+            const total = summary.total || 0;
+            const positive = summary.positive || 0;
+            const negative = summary.negative || 0;
+            const neutral = summary.neutral || 0;
+
+            const colors = {
+                positive: '#10B981',
+                negative: '#EF4444',
+                neutral: '#F59E0B',
+                finance: '#3B82F6',
+                politics: '#8B5CF6',
+                defence: '#EF4444',
+                technology: '#10B981',
+                general: '#94A3B8',
+                hf: '#8B5CF6',
+                existing: '#F59E0B',
+                local: '#3B82F6'
+            };
+
+            // ===== Sentiment Pie =====
+            const ctx1 = document.getElementById('sentimentPieChart').getContext('2d');
+            chartInstances.sentiment = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        data: [positive, negative, neutral],
+                        backgroundColor: [colors.positive, colors.negative, colors.neutral],
+                        borderWidth: 3,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // ===== Domain Bar =====
+            const domains = summary.domains || {};
+            const domainLabels = Object.keys(domains);
+            const domainValues = Object.values(domains);
+            const domainColors = domainLabels.map(d => {
+                const key = d.toLowerCase();
+                return colors[key] || colors.general;
+            });
+
+            const ctx2 = document.getElementById('domainBarChart').getContext('2d');
+            chartInstances.domain = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: domainLabels.map(d => d.charAt(0).toUpperCase() + d.slice(1)),
+                    datasets: [{
+                        label: 'Articles',
+                        data: domainValues,
+                        backgroundColor: domainColors,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { size: 11 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // ===== Model Chart =====
+            const models = summary.models || {};
+            const modelLabels = Object.keys(models);
+            const modelValues = Object.values(models);
+            
+            const modelColorMap = {
+                'hf_space': colors.hf,
+                'existing_data': colors.existing,
+                'local_fallback': colors.local,
+                'local_ml': colors.local,
+                'neutral_fallback': '#94A3B8'
+            };
+            
+            const modelColors = modelLabels.map(m => {
+                const key = m.toLowerCase();
+                return modelColorMap[key] || '#94A3B8';
+            });
+
+            const modelDisplayLabels = modelLabels.map(m => {
+                if (m === 'hf_space') return '🚀 HF Space';
+                if (m === 'existing_data') return '📊 Existing Data';
+                if (m === 'local_fallback' || m === 'local_ml') return '💻 Local ML';
+                if (m === 'neutral_fallback') return '⚪ Neutral Fallback';
+                return m;
+            });
+
+            const ctx3 = document.getElementById('modelChart').getContext('2d');
+            chartInstances.model = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: modelDisplayLabels,
+                    datasets: [{
+                        data: modelValues,
+                        backgroundColor: modelColors,
+                        borderWidth: 3,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // ============================================
+        // ANALYZE FUNCTIONS
+        // ============================================
+        async function analyzeExcel() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showAlert('error', 'Please select a file first.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('mode', analysisMode);
+
+            showLoading(true);
+            clearAlerts();
+
+            try {
+                const response = await fetch('/api/analyze/excel', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentResults = data.results || [];
+                    currentSummary = data.summary || {};
+                    renderAll(currentResults, currentSummary);
+                    showAlert('success', `✅ Analysis complete! ${currentResults.length} articles processed.`);
+                } else {
+                    showAlert('error', data.error || 'Analysis failed.');
+                }
+            } catch (err) {
+                showAlert('error', `Network error: ${err.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function analyzeSQL() {
+            const query = document.getElementById('sqlQuery').value.trim();
+            if (!query) {
+                showAlert('error', 'Please enter a SQL query.');
+                return;
+            }
+
+            showLoading(true);
+            clearAlerts();
+
+            try {
+                const response = await fetch('/api/analyze/sql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, mode: analysisMode })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentResults = data.results || [];
+                    currentSummary = data.summary || {};
+                    renderAll(currentResults, currentSummary);
+                    showAlert('success', `✅ Query executed! ${currentResults.length} articles processed.`);
+                } else {
+                    showAlert('error', data.error || 'Query failed.');
+                }
+            } catch (err) {
+                showAlert('error', `Network error: ${err.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================================
+        // EXPORT & CLEAR
+        // ============================================
+        async function exportResults() {
+            try {
+                const response = await fetch('/api/export');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `news_analysis_${new Date().toISOString().slice(0,10)}.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (err) {
+                showAlert('error', `Export failed: ${err.message}`);
+            }
+        }
+
+        async function clearAll() {
+            try {
+                const response = await fetch('/api/clear', { method: 'POST' });
+                if (response.ok) {
+                    showAlert('success', '🗑️ Database cleared successfully');
+                }
+            } catch (e) {
+                console.log('Clear error:', e);
+            }
+            
+            currentResults = [];
+            currentSummary = {};
+            renderAll([], {});
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+        }
+
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+        function renderAll(results, summary) {
+            const dashboard = document.getElementById('dashboard');
+            if (results && results.length > 0) {
+                dashboard.classList.add('visible');
+            } else {
+                dashboard.classList.remove('visible');
+            }
+            
+            renderStats(summary);
+            createCharts(summary);
+            renderTable(results);
+        }
+
+        function renderStats(summary) {
+            document.getElementById('statTotal').textContent = summary.total || 0;
+            document.getElementById('statPositive').textContent = summary.positive || 0;
+            document.getElementById('statNegative').textContent = summary.negative || 0;
+            document.getElementById('statNeutral').textContent = summary.neutral || 0;
+        }
+
+        function renderTable(results) {
+            const tbody = document.getElementById('resultsBody');
+            
+            if (!results || results.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 3rem;">📊 No data loaded. Upload a file or run a query to get started.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = results.map((row, i) => {
+                const sentiment = row.sentiment_label || 'Neutral';
+                const domain = row.detected_domain || 'general';
+                const model = row.model_used || 'N/A';
+                
+                let modelClass = 'model-fallback';
+                let modelDisplay = model;
+                if (model === 'hf_space') { 
+                    modelClass = 'model-hf'; 
+                    modelDisplay = '🚀 HF Space';
+                } else if (model === 'existing_data') { 
+                    modelClass = 'model-existing'; 
+                    modelDisplay = '📊 Existing';
+                } else if (model === 'local_fallback' || model === 'local_ml') { 
+                    modelClass = 'model-local'; 
+                    modelDisplay = '💻 Local ML';
+                } else if (model === 'hf_failed') {
+                    modelClass = 'model-fallback';
+                    modelDisplay = '❌ HF Failed';
+                } else if (model === 'neutral_fallback') { 
+                    modelClass = 'model-fallback'; 
+                    modelDisplay = '⚪ Neutral Fallback';
+                }
+                
+                return `
+                    <tr>
+                        <td><span style="color: var(--text-light); font-weight: 500;">${i + 1}</span></td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight: 500;" title="${row.headline || ''}">
+                            ${row.headline || 'N/A'}
+                        </td>
+                        <td style="color: var(--text-light);">${row.publication_date || row.date || 'N/A'}</td>
+                        <td>${row.source || 'Unknown'}</td>
+                        <td><span class="badge badge-domain">${domain}</span></td>
+                        <td><span class="badge badge-${sentiment.toLowerCase()}">${sentiment}</span></td>
+                        <td><span class="model-tag ${modelClass}">${modelDisplay}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // UI HELPERS
+        // ============================================
+        function showLoading(show) {
+            document.getElementById('loading')?.remove();
+            if (show) {
+                const modeLabel = { auto: 'Auto (HF → Local fallback)', hf: 'HF Space Only', local: 'Local ML Only' }[analysisMode];
+                const div = document.createElement('div');
+                div.id = 'loading';
+                div.className = 'loading';
+                div.innerHTML = `
+                    <div class="spinner"></div>
+                    <p style="font-weight: 500;">Processing data...</p>
+                    <p class="text-muted text-sm">Mode: ${modeLabel}</p>
+                `;
+                document.getElementById('dashboard').prepend(div);
+            }
+        }
+
+        function showAlert(type, message) {
+            const container = document.getElementById('statusMessages');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 8000);
+        }
+
+        function clearAlerts() {
+            document.getElementById('statusMessages').innerHTML = '';
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkHFStatus();
+            renderAll([], {});
+            console.log('📊 Dashboard ready. Upload a file or run a query.');
+        });
+    </script>
+</body>
+</html>
