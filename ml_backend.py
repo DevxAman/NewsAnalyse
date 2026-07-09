@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 # Space side. Once that's added, gradio_client handles Gradio's queued call
 # protocol correctly (a raw requests.post to /api/predict does NOT work
 # reliably against modern Gradio and was the cause of the bad/neutral scores).
-HF_SPACE_ID = "DevxAman/Sentiment_Analyser"
+HF_SPACE_ID = "https://devxaman-sentiment-analyser.hf.space"
 USE_HF_API = True
 
 _hf_client = None
