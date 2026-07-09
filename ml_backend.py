@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 # protocol correctly (a raw requests.post to /api/predict does NOT work
 # reliably against modern Gradio and was the cause of the bad/neutral scores).
 HF_SPACE_ID = "DevxAman/Sentiment_Analyser"
-USE_HF_API = False
+USE_HF_API = True
 
 _hf_client = None
 
@@ -123,22 +123,22 @@ class NewsAnalyzer:
         logger.info(f"🔗 HF Space: {HF_SPACE_ID}")
         logger.info(f"🤖 HF API Enabled: {USE_HF_API}")
         
+        self.models = {}
+        self._models_loaded = False
+        
         if ML_AVAILABLE:
             self.device = 0 if torch.cuda.is_available() else -1
             device_name = "GPU" if self.device == 0 else "CPU"
-            logger.info(f"  -> Local ML device: {device_name}")
-            
-            self.models = {}
-            self._load_models()
+            logger.info(f"  -> Local ML device: {device_name} (loaded lazily on first local-fallback use)")
         else:
             logger.info("  -> Local ML not available")
-            self.models = {}
         
         logger.info("✅ News Analyzer ready")
     
     def _load_models(self):
-        if not ML_AVAILABLE:
+        if not ML_AVAILABLE or self._models_loaded:
             return
+        self._models_loaded = True
         
         try:
             logger.info("  -> Loading distilbert-base-uncased-finetuned-sst-2-english...")
@@ -195,6 +195,9 @@ class NewsAnalyzer:
             }
         
         domain = self.detect_domain(text)
+        
+        if ML_AVAILABLE and not self._models_loaded:
+            self._load_models()
         
         if ML_AVAILABLE and self.models.get('general') is not None:
             try:
